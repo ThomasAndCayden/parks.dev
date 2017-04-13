@@ -40,6 +40,8 @@ class Park
      * our connection to the database
      */
     public static $connection = null;
+    
+
     /**
      * establish a database connection if we do not have one
      */
@@ -56,10 +58,15 @@ class Park
      */
     public static function count() {
         // TODO: call dbConnect to ensure we have a database connection
-        self::dbConnect();
-
         // TODO: use the $dbc static property to query the database for the
         //       number of existing park records
+
+        self::dbConnect();
+        $connection = self::$connection;
+
+        $parkTotal = count(self::all()); 
+        
+        return $parkTotal;
 
     }
 
@@ -97,7 +104,6 @@ class Park
             $arrayOfParks[] = $nationalPark;
         }
 
-        var_dump($arrayOfParks);
         // TODO: return an array of Park objects
         return $arrayOfParks;
     }
