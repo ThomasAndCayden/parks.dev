@@ -111,12 +111,25 @@ class Park
     /**
      * returns $resultsPerPage number of results for the given page number
      */
-    public static function paginate($pageNo, $resultsPerPage = 4) {
+    public static function paginate($page, $limit = 4) {
         // TODO: call dbConnect to ensure we have a database connection
-        $connection = self::dbConnect();
-
+        self::dbConnect();
+        $connection = self::$connection;
         // TODO: calculate the limit and offset needed based on the passed
         //       values
+        $offset = ($page - 1) * $limit;
+
+        $select = "SELECT * FROM national_parks LIMIT :limit OFFSET :offset";
+        $statement = $connection->prepare($select);
+        $statement->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $statement->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        
+        $result = $statement->execute();
+        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+
+        
         // TODO: use the $dbc static property to query the database with the
         //       calculated limit and offset
         // TODO: return an array of the found Park objects
@@ -150,7 +163,8 @@ class Park
      */
     public function insert() {
         // TODO: call dbConnect to ensure we have a database connection
-        $connection =self::dbConnect();
+        self::dbConnect();
+        $connection = self::$connection;
         
         // TODO: use the $dbc static property to create a perpared statement for
         //       inserting a record into the parks table
