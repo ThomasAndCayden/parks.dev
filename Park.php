@@ -94,7 +94,6 @@ class Park
 
         foreach ($parks as $park) {
             $nationalPark = new Park();
-            $nationalPark->id = $park['id'];
             $nationalPark->name = $park['name'];
             $nationalPark->location = $park['location'];
             $nationalPark->dateEstablished = $park['date_established'];
@@ -119,29 +118,22 @@ class Park
         //       values
         $offset = ($page - 1) * $limit;
 
+        // TODO: use the $dbc static property to query the database with the
+        //       calculated limit and offset
         $select = "SELECT * FROM national_parks LIMIT :limit OFFSET :offset";
         $statement = $connection->prepare($select);
         $statement->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
         $statement->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
         
         $result = $statement->execute();
+
+        // TODO: return an array of the found Park objects
         $results = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         return $results;
 
         
-        // TODO: use the $dbc static property to query the database with the
-        //       calculated limit and offset
-        // TODO: return an array of the found Park objects
 
-        // For reference
-        // $parks = [];
-
-        // $park = new Park();
-        // $park->name =  $row['name'];
-
-        // $parks[] = $park;
-        // return $parks;
     }
 
     /////////////////////////////////////
@@ -164,10 +156,23 @@ class Park
     public function insert() {
         // TODO: call dbConnect to ensure we have a database connection
         self::dbConnect();
-        $connection = self::$connection;
+        // $connection = self::$connection;
         
-        // TODO: use the $dbc static property to create a perpared statement for
+        // TODO: use the $dbc static property to create a prepared statement for
         //       inserting a record into the parks table
+
+        $insert = "INSERT INTO national_parks (name, location, date_established, area_in_acres, description) VALUES(:name, :location, :date_established, :area_in_acres, :description)"; 
+        $statement = self::$connection->prepare($insert);
+
+        $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
+        $statement->bindValue(':location', $this->location, PDO::PARAM_STR);
+        $statement->bindValue(':date_established', $this->dateEstablished, PDO::PARAM_STR);
+        $statement->bindValue(':area_in_acres', $this->areaInAcres, PDO::PARAM_INT);
+        $statement->bindValue(':description', $this->description, PDO::PARAM_STR);
+
+        $statement->execute();
+        $this->id = self::$connection->lastInsertId();
+
         // TODO: use the $this keyword to bind the values from this object to
         //       the prepared statement
         // TODO: excute the statement and set the $id property of this object to
