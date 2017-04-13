@@ -80,23 +80,26 @@ class Park
         $parks = $connection->prepare($select);
 
         $parks->execute();
-
-        print_r($parks);
-            // $parks = [];
-        // foreach ($parks as $park) {
-
-        //     $park = new Park();
-        //     $park->name = $park['name'];
-        //     $park->location = $park['location'];
-
-        //     $parks[] = $park;
-        //     var_dump($park) . PHP_EOL;
-        // }
-
+        $arrayOfParks = [];
 
         // TODO: iterate over the results array and transform each associative
         //       array into a Park object
+
+        foreach ($parks as $park) {
+            $nationalPark = new Park();
+            $nationalPark->id = $park['id'];
+            $nationalPark->name = $park['name'];
+            $nationalPark->location = $park['location'];
+            $nationalPark->dateEstablished = $park['date_established'];
+            $nationalPark->areaInAcres = $park['area_in_acres'];
+            $nationalPark->description = $park['description'];
+
+            $arrayOfParks[] = $nationalPark;
+        }
+
+        var_dump($arrayOfParks);
         // TODO: return an array of Park objects
+        return $arrayOfParks;
     }
 
     /**
