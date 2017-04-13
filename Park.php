@@ -1,4 +1,5 @@
 <?php
+    require __DIR__ . '/db_connection.php';
 
 /**
  * A Class for interacting with the national_parks database table
@@ -39,16 +40,17 @@ class Park
     /**
      * our connection to the database
      */
-    public static $dbc = null;
+    public static $connection = null;
 
     /**
      * establish a database connection if we do not have one
      */
+
     public static function dbConnect() {
-        if (!is_null(self::$dbc)) {
+        if (!is_null(self::$connection)) {
             return;
         }
-        self::$dbc = require 'dbc.php';
+        self::$connection = require 'db_connection.php';
     }
 
     /**
@@ -56,15 +58,22 @@ class Park
      */
     public static function count() {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+
         // TODO: use the $dbc static property to query the database for the
         //       number of existing park records
+
     }
 
     /**
      * returns all the records
      */
+
+
     public static function all() {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+
         // TODO: use the $dbc static property to query the database for all the
         //       records in the parks table
         // TODO: iterate over the results array and transform each associative
@@ -77,11 +86,22 @@ class Park
      */
     public static function paginate($pageNo, $resultsPerPage = 4) {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+
         // TODO: calculate the limit and offset needed based on the passed
         //       values
         // TODO: use the $dbc static property to query the database with the
         //       calculated limit and offset
         // TODO: return an array of the found Park objects
+
+        // For reference
+        // $parks = [];
+
+        // $park = new Park();
+        // $park->name =  $row['name'];
+
+        // $parks[] = $park;
+        // return $parks;
     }
 
     /////////////////////////////////////
@@ -103,6 +123,8 @@ class Park
      */
     public function insert() {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+        
         // TODO: use the $dbc static property to create a perpared statement for
         //       inserting a record into the parks table
         // TODO: use the $this keyword to bind the values from this object to
