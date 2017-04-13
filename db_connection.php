@@ -9,7 +9,9 @@ try {
 		DB_PASSWORD
 	);
 
+    return $connection;
     $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 
 } catch (PDOException $e) {
 	// Exception

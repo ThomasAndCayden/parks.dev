@@ -1,5 +1,4 @@
 <?php
-    require __DIR__ . '/db_connection.php';
 
 /**
  * A Class for interacting with the national_parks database table
@@ -41,7 +40,6 @@ class Park
      * our connection to the database
      */
     public static $connection = null;
-
     /**
      * establish a database connection if we do not have one
      */
@@ -73,9 +71,29 @@ class Park
     public static function all() {
         // TODO: call dbConnect to ensure we have a database connection
         self::dbConnect();
+        $connection = self::$connection;
+
 
         // TODO: use the $dbc static property to query the database for all the
         //       records in the parks table
+        $select = "SELECT * FROM national_parks";
+        $parks = $connection->prepare($select);
+
+        $parks->execute();
+
+        print_r($parks);
+            // $parks = [];
+        // foreach ($parks as $park) {
+
+        //     $park = new Park();
+        //     $park->name = $park['name'];
+        //     $park->location = $park['location'];
+
+        //     $parks[] = $park;
+        //     var_dump($park) . PHP_EOL;
+        // }
+
+
         // TODO: iterate over the results array and transform each associative
         //       array into a Park object
         // TODO: return an array of Park objects
@@ -86,7 +104,7 @@ class Park
      */
     public static function paginate($pageNo, $resultsPerPage = 4) {
         // TODO: call dbConnect to ensure we have a database connection
-        self::dbConnect();
+        $connection = self::dbConnect();
 
         // TODO: calculate the limit and offset needed based on the passed
         //       values
@@ -123,7 +141,7 @@ class Park
      */
     public function insert() {
         // TODO: call dbConnect to ensure we have a database connection
-        self::dbConnect();
+        $connection =self::dbConnect();
         
         // TODO: use the $dbc static property to create a perpared statement for
         //       inserting a record into the parks table
