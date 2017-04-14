@@ -5,19 +5,6 @@
 
 	$title = "National Parks";
 
-function getLastPage($connection, $limit) {
-
-	// $statement = Park::all();
-	$count = Park::count();
-	$lastPage = ceil($count / $limit);
-
-	return $lastPage;
-}
-
-function getPaginatedParks($page) {
-	return Park::paginate($page);
-}
-
 function handleOutOfRangeRequest($page, $lastPage) {
 	if($page < 1 || !is_numeric($page)) {
 		header("location: national_parks.php?page=1");
@@ -58,10 +45,12 @@ function pageController($connection) {
 	$page = Input::get('page', 1);
 	insertParks($connection);
 
-	$lastPage = getLastPage($connection, $limit);
+	$count = Park::count();
+	$lastPage = ceil($count / $limit);
+
 	handleOutOfRangeRequest($page, $lastPage);
 
-	$data['parks'] = getPaginatedParks($page);
+	$data['parks'] = Park::paginate($page);
 	$data['page'] = $page;
 	$data['lastPage'] = $lastPage;
 
