@@ -7,7 +7,7 @@
 
 function getLastPage($connection, $limit) {
 
-	$statement = Park::all();
+	// $statement = Park::all();
 	$count = Park::count();
 	$lastPage = ceil($count / $limit);
 
