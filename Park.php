@@ -39,16 +39,18 @@ class Park
     /**
      * our connection to the database
      */
-    public static $dbc = null;
+    public static $connection = null;
+    
 
     /**
      * establish a database connection if we do not have one
      */
+
     public static function dbConnect() {
-        if (!is_null(self::$dbc)) {
+        if (!is_null(self::$connection)) {
             return;
         }
-        self::$dbc = require 'dbc.php';
+        self::$connection = require 'db_connection.php';
     }
 
     /**
@@ -58,30 +60,80 @@ class Park
         // TODO: call dbConnect to ensure we have a database connection
         // TODO: use the $dbc static property to query the database for the
         //       number of existing park records
+
+        self::dbConnect();
+        $connection = self::$connection;
+
+        $parkTotal = count(self::all()); 
+        
+        return $parkTotal;
+
     }
 
     /**
      * returns all the records
      */
+
+
     public static function all() {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+        $connection = self::$connection;
+
+
         // TODO: use the $dbc static property to query the database for all the
         //       records in the parks table
+        $select = "SELECT * FROM national_parks";
+        $parks = $connection->prepare($select);
+
+        $parks->execute();
+        $arrayOfParks = [];
+
         // TODO: iterate over the results array and transform each associative
         //       array into a Park object
+
+        foreach ($parks as $park) {
+            $nationalPark = new Park();
+            $nationalPark->name = $park['name'];
+            $nationalPark->location = $park['location'];
+            $nationalPark->dateEstablished = $park['date_established'];
+            $nationalPark->areaInAcres = $park['area_in_acres'];
+            $nationalPark->description = $park['description'];
+
+            $arrayOfParks[] = $nationalPark;
+        }
+
         // TODO: return an array of Park objects
+        return $arrayOfParks;
     }
 
     /**
      * returns $resultsPerPage number of results for the given page number
      */
-    public static function paginate($pageNo, $resultsPerPage = 4) {
+    public static function paginate($page, $limit = 4) {
         // TODO: call dbConnect to ensure we have a database connection
+        self::dbConnect();
+        $connection = self::$connection;
         // TODO: calculate the limit and offset needed based on the passed
         //       values
+        $offset = ($page - 1) * $limit;
+
         // TODO: use the $dbc static property to query the database with the
         //       calculated limit and offset
+        $select = "SELECT * FROM national_parks LIMIT :limit OFFSET :offset";
+        $statement = $connection->prepare($select);
+        $statement->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $statement->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        
+        $result = $statement->execute();
+
         // TODO: return an array of the found Park objects
+        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+
+        
+
     }
 
     /////////////////////////////////////
@@ -103,8 +155,24 @@ class Park
      */
     public function insert() {
         // TODO: call dbConnect to ensure we have a database connection
-        // TODO: use the $dbc static property to create a perpared statement for
+        self::dbConnect();
+        // $connection = self::$connection;
+        
+        // TODO: use the $dbc static property to create a prepared statement for
         //       inserting a record into the parks table
+
+        $insert = "INSERT INTO national_parks (name, location, date_established, area_in_acres, description) VALUES(:name, :location, :date_established, :area_in_acres, :description)"; 
+        $statement = self::$connection->prepare($insert);
+
+        $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
+        $statement->bindValue(':location', $this->location, PDO::PARAM_STR);
+        $statement->bindValue(':date_established', $this->dateEstablished, PDO::PARAM_STR);
+        $statement->bindValue(':area_in_acres', $this->areaInAcres, PDO::PARAM_INT);
+        $statement->bindValue(':description', $this->description, PDO::PARAM_STR);
+
+        $statement->execute();
+        $this->id = self::$connection->lastInsertId();
+
         // TODO: use the $this keyword to bind the values from this object to
         //       the prepared statement
         // TODO: excute the statement and set the $id property of this object to
