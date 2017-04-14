@@ -75,6 +75,13 @@ extract(pageController(Park::dbConnect()));
     >
     <link rel="stylesheet" href="national_parks.css">
     <title><?= $title ?></title>
+    <style type="text/css">
+    		
+		h1 {
+			text-align: center;
+		}
+
+    </style>
     <!--[if lt IE 9]>
     <script src="http://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js">
     </script>
