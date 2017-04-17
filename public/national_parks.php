@@ -5,19 +5,6 @@
 
 	$title = "National Parks";
 
-function getLastPage($connection, $limit) {
-
-	$statement = Park::all();
-	$count = Park::count();
-	$lastPage = ceil($count / $limit);
-
-	return $lastPage;
-}
-
-function getPaginatedParks($page) {
-	return Park::paginate($page);
-}
-
 function handleOutOfRangeRequest($page, $lastPage) {
 	if($page < 1 || !is_numeric($page)) {
 		header("location: national_parks.php?page=1");
@@ -29,18 +16,51 @@ function handleOutOfRangeRequest($page, $lastPage) {
 }
 
 function insertParks($connection) {
+	
+	$errors = [];
+	
 	if(!empty($_POST) && validateInput()) {
 
 		$park = new Park();
-		$park->name = Input::get('name');
-		$park->location = Input::get('location');
-		$park->dateEstablished = Input::get('date_established');
-		$park->areaInAcres = Input::get('area_in_acres');
-		$park->description = Input::get('description');
-		$park->insert();
-		
-		header('location: national_parks.php');
+
+		try {
+			$park->name = Input::getString('name');
+		} catch (Exception $e) {
+			$errors[] = $e->getMessage();
+		}
+
+		try {
+			$park->location = Input::getString('location');
+		} catch (Exception $e) {
+			$errors[] = $e->getMessage();
+		}
+
+		try {
+			$park->dateEstablished = Input::getDate('date_established');
+		} catch (Exception $e) {
+			$errors[] = $e->getMessage();
+		}
+
+		try {
+			$park->areaInAcres = Input::getNumber('area_in_acres');
+		} catch (Exception $e) {
+			$errors[] = $e->getMessage();
+		}
+
+		try {
+			$park->description = Input::getString('description');
+		} catch (Exception $e) {
+			$errors[] = $e->getMessage();
+		}
+
+		if(empty($errors)) {
+			$park->insert();
+			header('location: national_parks.php');
+			exit;
+		} 
 	}
+
+	return $errors;
 }
 
 function validateInput() {
@@ -56,14 +76,18 @@ function pageController($connection) {
 	$data = [];
 	$limit = 4;
 	$page = Input::get('page', 1);
-	insertParks($connection);
 
-	$lastPage = getLastPage($connection, $limit);
+	$errors = insertParks($connection);
+
+	$count = Park::count();
+	$lastPage = ceil($count / $limit);
+
 	handleOutOfRangeRequest($page, $lastPage);
 
-	$data['parks'] = getPaginatedParks($page);
+	$data['parks'] = Park::paginate($page);
 	$data['page'] = $page;
 	$data['lastPage'] = $lastPage;
+	$data['errors'] = $errors;
 
 	return $data;
 }
@@ -86,6 +110,13 @@ extract(pageController(Park::dbConnect()));
     >
     <link rel="stylesheet" href="national_parks.css">
     <title><?= $title ?></title>
+    <style type="text/css">
+    		
+		h1 {
+			text-align: center;
+		}
+
+    </style>
     <!--[if lt IE 9]>
     <script src="http://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js">
     </script>
@@ -95,8 +126,17 @@ extract(pageController(Park::dbConnect()));
 </head>
 <body>
 	<main class="container">
-	<h1 class="col-xs-12">National Parks</h1>
-	
+	<h1>National Parks</h1>
+	<?php if(!empty($errors)): ?>
+		<h4>Error(s)</h4>
+	<?php endif; ?>
+
+	<ul>
+		<?php foreach($errors as $error): ?>
+			<li><?= $error ?></li>
+		<?php endforeach; ?>
+	</ul>
+
 	<table class="table table-bordered table-striped">
 
 		<thead>
@@ -112,7 +152,7 @@ extract(pageController(Park::dbConnect()));
 		<?php foreach($parks as $park): ?>
 			<tbody>
 				<tr>
-					<td><?= $park['name'] ?></td>
+					<td ><?= $park['name'] ?></td>
 					<td><?= $park['location'] ?></td>
 					<td><?= $park['date_established'] ?></td>
 					<td><?= $park['area_in_acres'] ?></td>
@@ -133,47 +173,47 @@ extract(pageController(Park::dbConnect()));
 
 	<br>
 
-	<form class="form-horizontal" method="POST">
-	  <fieldset>
-	    <legend class="text-center">Add New National Park</legend>
-	    <div class="form-group">
-	      <label for="name" class="col-lg-2 control-label">Name</label>
-	      <div class="col-lg-10">
-	        <input name='name' type="text" class="form-control" id="name" placeholder="Name">
-	      </div>
-	    </div>
-	    <div class="form-group">
-	      <label for="location" class="col-lg-2 control-label">Location</label>
-	      <div class="col-lg-10">
-	        <input name='location' type="text" class="form-control" id="location" placeholder="Location">
-	      </div>
-	    </div>
-	    <div class="form-group">
-	      <label for="date_established" class="col-lg-2 control-label">Date Established</label>
-	      <div class="col-lg-10">
-	        <input name='date_established' type="text" class="form-control" id="date_established" placeholder="YYYY-MM-DD">
-	      </div>
-	    </div>
-	    <div class="form-group">
-	      <label for="area_in_acres" class="col-lg-2 control-label">Area in Acres</label>
-	      <div class="col-lg-10">
-	        <input name='area_in_acres' type="text" class="form-control" id="area_in_acres" placeholder="Area in Acres">
-	      </div>
-	    </div>
-	    <div class="form-group">
-	      <label for="description" class="col-lg-2 control-label">Description</label>
-	      <div class="col-lg-10">
-	        <textarea name='description' class="form-control" rows="3" id="description"></textarea>
-	      </div>
-	    </div>
-	    <div class="form-group">
-	      <div class="col-lg-10 col-lg-offset-2">
-	        <button type="reset" class="btn btn-default">Cancel</button>
-	        <button type="submit" class="btn btn-primary">Submit</button>
-	      </div>
-	    </div>
-	  </fieldset>
-	</form>		
+		<form class="form-horizontal" method="POST">
+		  <fieldset>
+		    <legend class="text-center">Add New National Park</legend>
+		    <div class="form-group">
+		      <label for="name" class="col-lg-2 control-label">Name</label>
+		      <div class="col-lg-10">
+		        <input name='name' type="text" class="form-control" id="name" placeholder="Name">
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <label for="location" class="col-lg-2 control-label">Location</label>
+		      <div class="col-lg-10">
+		        <input name='location' type="text" class="form-control" id="location" placeholder="Location">
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <label for="date_established" class="col-lg-2 control-label">Date Established</label>
+		      <div class="col-lg-10">
+		        <input name='date_established' type="text" class="form-control" id="date_established" placeholder="YYYY-MM-DD">
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <label for="area_in_acres" class="col-lg-2 control-label">Area in Acres</label>
+		      <div class="col-lg-10">
+		        <input name='area_in_acres' type="text" class="form-control" id="area_in_acres" placeholder="Area in Acres">
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <label for="description" class="col-lg-2 control-label">Description</label>
+		      <div class="col-lg-10">
+		        <textarea name='description' class="form-control" rows="3" id="description"></textarea>
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <div class="col-lg-10 col-lg-offset-2">
+		        <button type="reset" class="btn btn-default">Cancel</button>
+		        <button type="submit" class="btn btn-primary">Submit</button>
+		      </div>
+		    </div>
+		  </fieldset>
+		</form>		
 
 	</main>
 </body>
